@@ -2,7 +2,7 @@
 
 API REST desarrollada con Django y Django REST Framework para gestionar operaciones internas de la empresa **Little Lemon**, incluyendo:
 
-- Gestión de usuarios y grupos (`Manager`, `Delivery crew`, `Customer`)
+- Gestión de usuarios y grupos (`Manager`, `Delivery crew`)
 - Creación y consulta de órdenes
 - Carrito de compras
 - Menú y categorías

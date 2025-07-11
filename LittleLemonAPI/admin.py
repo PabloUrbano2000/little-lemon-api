@@ -20,7 +20,7 @@ class CartAdmin(admin.ModelAdmin):
 class OrderAdmin(admin.ModelAdmin): 
     list_display = ("id","user", "delivery_crew", "status", "total", "date")
     search_fields = ("user", )
-admin.site.register(OrderItem)
-class OrderAdmin(admin.ModelAdmin): 
-    list_display = ("id","user", "delivery_crew", "status", "total", "date")
-    search_fields = ("user", )
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin): 
+    list_display = ("id","order", "menuitem", "quantity", "unit_price", "price")
+    search_fields = ("id", )

@@ -2,9 +2,8 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-  # SOLO GET de lo contrario 403
+  path('categories', views.categories_view),
   path('menu-items', views.menu_items_view),
-  # SOLO GET de lo contrario 403
   path('menu-items/<int:menuItem>', views.single_menu_item_view),
 
   path('groups/manager/users', views.managers_view),

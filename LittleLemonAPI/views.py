@@ -6,9 +6,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import throttle_classes
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
-from .models import MenuItem, Cart, Order
+from .models import Category, MenuItem, Cart, Order
 from django.contrib.auth.models import User, Group
-from .serializers import MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer
+from .serializers import CategorySerializer, MenuItemSerializer, UserSerializer, CartSerializer, OrderSerializer
 
 def user_is_in_group(user, group_name):
   return user.groups.filter(name=group_name).exists()
@@ -16,9 +16,40 @@ def user_is_in_group(user, group_name):
 def get_user_role_flags(user):
   return {
     "is_authenticated": user.is_authenticated,
+    "is_superuser": user.is_superuser,
     "is_manager": user_is_in_group(user, "Manager"),
     "is_delivery": user_is_in_group(user, "Delivery crew")
   }
+
+
+@api_view(['GET', 'POST'])
+@throttle_classes([UserRateThrottle])
+@permission_classes([IsAuthenticated])
+def categories_view(request):
+  if not user_is_in_group(request.user,  "Manager"):
+    return Response(status=status.HTTP_403_FORBIDDEN)
+  if request.method == 'GET':
+    categories = Category.objects.all()
+    ordering = request.query_params.get('ordering')
+    perpage = request.query_params.get('perpage', default=3)
+    page = request.query_params.get('page', default=1)
+    if ordering:
+      ordering_fields = ordering.split(',')
+      items = items.order_by(*ordering_fields)
+    paginator = Paginator(categories, per_page=perpage)
+    try:
+      categories = paginator.page(page)
+      pass
+    except EmptyPage:
+      categories = []
+    serialized_item = CategorySerializer(categories, many = True, context={'request': request})
+    return Response(serialized_item.data, status=status.HTTP_200_OK)
+  elif request.method == 'POST':
+    serialized_item = CategorySerializer(data=request.data)
+    serialized_item.is_valid(raise_exception=True)
+    serialized_item.save()
+    return Response(serialized_item.data, status=status.HTTP_201_CREATED)
+  return Response(status= status.HTTP_403_FORBIDDEN)
 
 @api_view(['GET', 'POST'])
 @throttle_classes([AnonRateThrottle, UserRateThrottle])

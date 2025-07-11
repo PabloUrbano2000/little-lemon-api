@@ -37,7 +37,6 @@ class UserSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
   menuitem = MenuItemSerializer(read_only=True)
   menuitem_id = serializers.IntegerField(write_only=True)
-  # unit_price = serializers.DecimalField(max_digits=6, decimal_places=2,read_only=True)
   class Meta:
     model = Cart
     fields = ['id', 'menuitem', 'menuitem_id', 'quantity', 'unit_price', 'price', 'user']
@@ -50,18 +49,25 @@ class CartSerializer(serializers.ModelSerializer):
     validated_data["price"] = validated_data["quantity"] * validated_data["unit_price"]
     return super().create(validated_data)
 
+class OrderItemSerializer(serializers.ModelSerializer):
+  menuitem = serializers.StringRelatedField()  # o un sub‑serializer si quieres más datos
+
+  class Meta:
+      model = OrderItem
+      fields = ['id', 'menuitem', 'quantity', 'unit_price', 'price']
+
 class OrderSerializer(serializers.ModelSerializer):
-  delivery_crew_id = serializers.PrimaryKeyRelatedField(
-      source='delivery_crew',
-      queryset=User.objects.all(),
-      required=False,
-      write_only=True
+  delivery_crew = serializers.PrimaryKeyRelatedField(
+    queryset=User.objects.all(),
+    allow_null=True,
+    required=False
   )
   status = serializers.BooleanField(required=False)
+  orderitems = OrderItemSerializer(many=True, read_only=True)
   class Meta:
     model = Order
-    fields = ['id', 'user', 'delivery_crew','delivery_crew_id', 'status', 'total', 'date']
-    read_only_fields = ['id','user','delivery_crew', 'total', 'date']
+    fields = ['id', 'user', 'delivery_crew', 'orderitems', 'status', 'total', 'date']
+    read_only_fields = ['id','user', 'total', 'date']
 
   def create(self, _):
     user = self.context['request'].user
